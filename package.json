@@ -1,7 +1,7 @@
 {
   "name": "slides-beerjs-15",
   "version": "0.0.1",
-  "description": "Callback Hell, Async, Promise, Generators y Async/Await",
+  "description": "Solucionar el Callback Hell y de pasadita mejorar el performance",
   "main": "index.js",
   "scripts": {
     "start": "cleaver watch index.md",
