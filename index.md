@@ -11,28 +11,29 @@ controls: false
 
 --
 
-# Callback Hell, Async, Promise, Generators y Async/Await
+# Solucionar el Callback Hell y de pasadita mejorar el performance
 
 --
 
 ## Callback Hell
 
 ```javascript
-                        const myUglyFunction = cb => {
-                          someFunction1((err, data1) => {
-                            if (err) return cb(err);
-                            someFunction2((err, data2) => {
-                              if (err) return cb(err);
-                              someFunction3((err, data3) => {
-                                if (err) return cb(err);
-                                someFunction4((err, data4) => {
-                                  if (err) return cb(err);
-                                  cb(null, data1 + data2 + data3 + data4);
+                        const list = (req, res, next) => {
+                          Ticket.findAllManual((err, manual) => {
+                            if (err) return next(err);
+                            Ticket.findAllPaymentsWebpay((err, webpay) => {
+                              if (err) return next(err);
+                              Ticket.findAllPaymentsTransfer((err, transfer) => {
+                                if (err) return next(err);
+                                res.render('ticket/all', {
+                                  manual: manual,
+                                  webpay: webpay,
+                                  transfer: transfer
                                 });
                               });
                             });
                           });
-                        };
+                        }
 ```
 
 --
@@ -62,10 +63,15 @@ series([function1, function2], callback);
 ## Promises (ES6)
 
 ```javascript
-promise1().then(data1 => promise2(data1))
-  .then(data2 => promise3(data2))
-  .then(result => console.log(result))
-  .catch(err => console.err(err))
+geocoder.geocode(address).then(results => {
+  const coords = `${results[0].latitude},${results[0].longitude}`;
+  return w3w.reverse({coords: coords, lang: LANG});
+})
+  .then(response => res.send(response))
+  .catch(err => res.reply('an error occurred')
+
+const promises = [promise1(), promise2(), promise3()];
+Promise.all(promises).then(results => console.log(results[0]));
 ```
 
 ```javascript
@@ -101,19 +107,17 @@ fs.readFileAsync('file.js', 'utf8').then(...)
 ## Generators (ES6)
 
 ```javascript
-
-const r = require('rethinkdbdash')();
-
-function *() {
+const login = function *() {
   try {
-    yield r.dbCreate('quake').run();
-    yield r.db('quake').tableCreate('quakes').run();
-    yield r.db('quake').table('quakes')
-      .indexCreate('geometry', {geo: true}).run();
-    yield r.db('quake').table('quakes')
-      .insert(r.http(feedUrl)('features')).run();
+    const account = yield db.Account.find({
+      email: req.body.email,
+      password: req.body.password
+    });
+    account.statistics = yield account.getAccountStatistics(account);
+    yield account.incrementAccountLoginCount(account);
+    this.body = account;
   } catch (err) {
-    console.error(err);
+    return res.status(500).send(err);
   }
 };
 ```
@@ -123,17 +127,17 @@ function *() {
 ## async/awit (ES7)
 
 ```javascript
-
-async function() {
+const login = async function() {
   try {
-    await r.dbCreate('quake').run();
-    await r.db('quake').tableCreate('quakes').run();
-    await r.db('quake').table('quakes')
-      .indexCreate('geometry', {geo: true}).run();
-    await r.db('quake').table('quakes')
-      .insert(r.http(feedUrl)('features')).run();
+    const account = await db.Account.find({
+      email: req.body.email,
+      password: req.body.password
+    });
+    account.statistics = await account.getAccountStatistics(account);
+    await account.incrementAccountLoginCount(account);
+    this.body = account;
   } catch (err) {
-    console.error(err);
+    return res.status(500).send(err);
   }
-}
+};
 ```
